@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 using EmployeeApp.Services;
 
 namespace EmployeeApp.Views
@@ -13,40 +14,14 @@ namespace EmployeeApp.Views
             _authService = new AuthService();
         }
 
-        private void UsernameTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            UsernamePlaceholder.Visibility = Visibility.Collapsed;
-        }
-
-        private void UsernameTextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(UsernameTextBox.Text))
-            {
-                UsernamePlaceholder.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void PasswordBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            PasswordPlaceholder.Visibility = Visibility.Collapsed;
-        }
-
-        private void PasswordBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(PasswordBox.Password))
-            {
-                PasswordPlaceholder.Visibility = Visibility.Visible;
-            }
-        }
-
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            var username = UsernameTextBox.Text;
-            var password = PasswordBox.Password;
+            var username = UsernameTextBox.Text.Trim();
+            var password = PasswordBox.Password.Trim();
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                ErrorTextBlock.Text = "Пожалуйста, заполните все поля.";
+                ShowError("Пожалуйста, заполните все поля.");
                 return;
             }
 
@@ -54,17 +29,35 @@ namespace EmployeeApp.Views
 
             if (isAuthenticated)
             {
-                var mainWindow = new MainWindow(username); // Передаем username
+                var mainWindow = new MainWindow(username);
                 mainWindow.Show();
                 this.Close();
             }
             else
             {
-                ErrorTextBlock.Text = "Неверный логин или пароль.";
+                ShowError("Неверный логин или пароль.");
             }
         }
+
+        private void ShowError(string message)
+        {
+            ErrorTextBlock.Text = message;
+            ErrorTextBlock.Visibility = Visibility.Visible;
+        }
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed) 
+            {
+                this.DragMove();
+            }
+        }
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
     }
-
-    }
-
-
+}

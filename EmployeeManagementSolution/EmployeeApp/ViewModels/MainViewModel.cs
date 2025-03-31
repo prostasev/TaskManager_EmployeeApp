@@ -57,8 +57,8 @@ namespace EmployeeApp.ViewModels
                 }
 
                 Duties = new ObservableCollection<Duty>(_authService.GetEmployeeDuties(_currentUserId));
-                Tasks = new ObservableCollection<Task>(_authService.GetAllTasks());
-                Employees = new ObservableCollection<Employee>(_authService.GetAllEmployees());
+                Tasks = new ObservableCollection<Task>(_authService.GetAllTasks(_currentUserId, IsAdmin));
+                Employees = new ObservableCollection<Employee>(_authService.GetAllEmployees(_currentUserId, IsAdmin)); 
 
                 CreateTaskCommand = new RelayCommand(CreateTask, () => IsAdmin);
                 UpdateTaskCommand = new RelayCommand(UpdateTask, () => IsAdmin);
@@ -75,7 +75,7 @@ namespace EmployeeApp.ViewModels
             {
                 Debug.WriteLine($"Инициализация MainViewModel: {ex}");
                 MessageBox.Show($"Ошибка при инициализации: {ex.Message}", "Критическая ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                throw; 
+                throw;
             }
         }
 
@@ -86,7 +86,7 @@ namespace EmployeeApp.ViewModels
                 if (!string.IsNullOrEmpty(NewTaskName))
                 {
                     _authService.CreateTask(NewTaskName, NewTaskDescription);
-                    Tasks = new ObservableCollection<Task>(_authService.GetAllTasks());
+                    Tasks = new ObservableCollection<Task>(_authService.GetAllTasks(_currentUserId, IsAdmin)); 
                     OnPropertyChanged(nameof(Tasks));
                     NewTaskName = string.Empty;
                     NewTaskDescription = string.Empty;
@@ -112,7 +112,7 @@ namespace EmployeeApp.ViewModels
                 if (SelectedTask != null)
                 {
                     _authService.UpdateTask(SelectedTask.Id, SelectedTask.Name ?? string.Empty, SelectedTask.Description);
-                    Tasks = new ObservableCollection<Task>(_authService.GetAllTasks());
+                    Tasks = new ObservableCollection<Task>(_authService.GetAllTasks(_currentUserId, IsAdmin)); 
                     OnPropertyChanged(nameof(Tasks));
                 }
                 else
@@ -134,7 +134,7 @@ namespace EmployeeApp.ViewModels
                 if (SelectedTask != null)
                 {
                     _authService.DeleteTask(SelectedTask.Id);
-                    Tasks = new ObservableCollection<Task>(_authService.GetAllTasks());
+                    Tasks = new ObservableCollection<Task>(_authService.GetAllTasks(_currentUserId, IsAdmin)); 
                     OnPropertyChanged(nameof(Tasks));
                 }
                 else
@@ -228,7 +228,7 @@ namespace EmployeeApp.ViewModels
         {
             try
             {
-                Employees = new ObservableCollection<Employee>(_authService.SearchEmployees(SearchEmployeeText));
+                Employees = new ObservableCollection<Employee>(_authService.SearchEmployees(SearchEmployeeText, _currentUserId, IsAdmin));
                 OnPropertyChanged(nameof(Employees));
             }
             catch (Exception ex)
@@ -242,7 +242,7 @@ namespace EmployeeApp.ViewModels
         {
             try
             {
-                Tasks = new ObservableCollection<Task>(_authService.SearchTasks(SearchTaskText));
+                Tasks = new ObservableCollection<Task>(_authService.SearchTasks(SearchTaskText, _currentUserId, IsAdmin));
                 OnPropertyChanged(nameof(Tasks));
             }
             catch (Exception ex)
@@ -251,12 +251,13 @@ namespace EmployeeApp.ViewModels
                 MessageBox.Show($"Ошибка при поиске задач: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        
 
         private void SearchDuties()
         {
             try
             {
-                Duties = new ObservableCollection<Duty>(_authService.SearchDuties(SearchDutyText));
+                Duties = new ObservableCollection<Duty>(_authService.SearchDuties(SearchDutyText, _currentUserId, IsAdmin));
                 OnPropertyChanged(nameof(Duties));
             }
             catch (Exception ex)
@@ -270,7 +271,7 @@ namespace EmployeeApp.ViewModels
         {
             try
             {
-                Duties = new ObservableCollection<Duty>(_authService.FilterDutiesByDate(FilterStartDate, FilterEndDate));
+                Duties = new ObservableCollection<Duty>(_authService.FilterDutiesByDate(FilterStartDate, FilterEndDate, _currentUserId, IsAdmin));
                 OnPropertyChanged(nameof(Duties));
             }
             catch (Exception ex)

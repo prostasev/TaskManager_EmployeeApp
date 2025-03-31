@@ -38,7 +38,7 @@ namespace EmployeeApp.Services
                     var employee = context.Employees
                         .Include(e => e.Position)
                         .FirstOrDefault(e => e.Username == username);
-                    return employee?.Position?.Position == "Administrator";
+                    return employee != null && employee.Position != null && employee.Position.Position == "Administrator";
                 }
             }
             catch (Exception ex)
@@ -242,16 +242,78 @@ namespace EmployeeApp.Services
             }
         }
 
-        public List<Employee> SearchEmployees(string? searchText)
+        public List<Employee> GetAllEmployees(int userId, bool isAdmin)
         {
             try
             {
                 using (var context = new EmployeeDbContext())
                 {
-                    return context.Employees
-                        .Include(e => e.Position)
-                        .Where(e => string.IsNullOrEmpty(searchText) || e.FullName.Contains(searchText))
-                        .ToList();
+                    if (isAdmin)
+                    {
+                        return context.Employees
+                            .Include(e => e.Position)
+                            .ToList();
+                    }
+                    else
+                    {
+                        var userTaskIds = context.Duties
+                            .Where(d => d.UserId == userId)
+                            .Select(d => d.TaskId)
+                            .Distinct()
+                            .ToList();
+
+                        return context.Duties
+                            .Include(d => d.Employee)
+                            .ThenInclude(e => e!.Position) 
+                            .Where(d => userTaskIds.Contains(d.TaskId) && d.UserId != userId && d.Employee != null)
+                            .Select(d => d.Employee!)
+                            .Distinct()
+                            .ToList();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при получении всех сотрудников: {ex.Message}", ex);
+            }
+        }
+        public List<Employee> SearchEmployees(string? searchText, int userId, bool isAdmin)
+        {
+            try
+            {
+                using (var context = new EmployeeDbContext())
+                {
+                    IQueryable<Employee> query;
+
+                    if (isAdmin)
+                    {
+                        query = context.Employees
+                            .Include(e => e.Position)
+                            .AsQueryable();
+                    }
+                    else
+                    {
+                        var userTaskIds = context.Duties
+                            .Where(d => d.UserId == userId)
+                            .Select(d => d.TaskId)
+                            .Distinct()
+                            .ToList();
+
+                        query = context.Duties
+                            .Include(d => d.Employee)
+                            .ThenInclude(e => e!.Position)
+                            .Where(d => userTaskIds.Contains(d.TaskId) && d.UserId != userId && d.Employee != null)
+                            .Select(d => d.Employee!)
+                            .Distinct()
+                            .AsQueryable();
+                    }
+
+                    if (!string.IsNullOrEmpty(searchText))
+                    {
+                        query = query.Where(e => e.FullName.Contains(searchText));
+                    }
+
+                    return query.ToList();
                 }
             }
             catch (Exception ex)
@@ -260,15 +322,33 @@ namespace EmployeeApp.Services
             }
         }
 
-        public List<Task> SearchTasks(string? searchText)
+        public List<Task> SearchTasks(string? searchText, int userId, bool isAdmin)
         {
             try
             {
                 using (var context = new EmployeeDbContext())
                 {
-                    return context.Tasks
-                        .Where(t => string.IsNullOrEmpty(searchText) || t.Name.Contains(searchText))
-                        .ToList();
+                    IQueryable<Task> query;
+
+                    if (isAdmin)
+                    {
+                        query = context.Tasks.AsQueryable();
+                    }
+                    else
+                    {
+                        query = context.Duties
+                            .Where(d => d.UserId == userId && d.Task != null)
+                            .Select(d => d.Task!)
+                            .Distinct()
+                            .AsQueryable();
+                    }
+
+                    if (!string.IsNullOrEmpty(searchText))
+                    {
+                        query = query.Where(t => t.Name.Contains(searchText));
+                    }
+
+                    return query.ToList();
                 }
             }
             catch (Exception ex)
@@ -277,26 +357,7 @@ namespace EmployeeApp.Services
             }
         }
 
-        public List<Duty> SearchDuties(string? searchText)
-        {
-            try
-            {
-                using (var context = new EmployeeDbContext())
-                {
-                    return context.Duties
-                        .Include(d => d.Task)
-                        .Include(d => d.Employee)
-                        .Where(d => string.IsNullOrEmpty(searchText) || d.Name.Contains(searchText))
-                        .ToList();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка при поиске обязанностей: {ex.Message}", ex);
-            }
-        }
-
-        public List<Duty> FilterDutiesByDate(DateTime? startDate, DateTime? endDate)
+        public List<Duty> SearchDuties(string? searchText, int userId, bool isAdmin)
         {
             try
             {
@@ -306,6 +367,41 @@ namespace EmployeeApp.Services
                         .Include(d => d.Task)
                         .Include(d => d.Employee)
                         .AsQueryable();
+
+                    if (!isAdmin)
+                    {
+                        query = query.Where(d => d.UserId == userId);
+                    }
+
+                    if (!string.IsNullOrEmpty(searchText))
+                    {
+                        query = query.Where(d => d.Name.Contains(searchText));
+                    }
+
+                    return query.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при поиске обязанностей: {ex.Message}", ex);
+            }
+        }
+
+        public List<Duty> FilterDutiesByDate(DateTime? startDate, DateTime? endDate, int userId, bool isAdmin)
+        {
+            try
+            {
+                using (var context = new EmployeeDbContext())
+                {
+                    var query = context.Duties
+                        .Include(d => d.Task)
+                        .Include(d => d.Employee)
+                        .AsQueryable();
+
+                    if (!isAdmin)
+                    {
+                        query = query.Where(d => d.UserId == userId);
+                    }
 
                     if (startDate.HasValue)
                     {
@@ -326,33 +422,29 @@ namespace EmployeeApp.Services
             }
         }
 
-        public List<Task> GetAllTasks()
+        public List<Task> GetAllTasks(int userId, bool isAdmin)
         {
             try
             {
                 using (var context = new EmployeeDbContext())
                 {
-                    return context.Tasks.ToList();
+                    if (isAdmin)
+                    {
+                        return context.Tasks.ToList();
+                    }
+                    else
+                    {
+                        return context.Duties
+                            .Where(d => d.UserId == userId && d.Task != null)
+                            .Select(d => d.Task!)
+                            .Distinct()
+                            .ToList();
+                    }
                 }
             }
             catch (Exception ex)
             {
                 throw new Exception($"Ошибка при получении всех задач: {ex.Message}", ex);
-            }
-        }
-
-        public List<Employee> GetAllEmployees()
-        {
-            try
-            {
-                using (var context = new EmployeeDbContext())
-                {
-                    return context.Employees.Include(e => e.Position).ToList();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка при получении всех сотрудников: {ex.Message}", ex);
             }
         }
     }
