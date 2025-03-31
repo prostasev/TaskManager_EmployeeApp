@@ -1,6 +1,6 @@
 # EmployeeApp
 
-**EmployeeApp** — это настольное приложение, предназначенное для распределения обязанностей сотрудников на проекте. Оно обеспечивает эффективный контроль за работой сотрудников и управления проектами.
+**EmployeeApp** — это настольное приложение, предназначенное для распределения обязанностей сотрудников на проекте. Оно обеспечивает эффективный контроль за работой сотрудников и управление проектами.
 
 Приложение разработано с использованием **WPF** (Windows Presentation Foundation) и использует **MySQL** для хранения и извлечения данных.
 
@@ -15,22 +15,31 @@
 
 ### Шаги по установке
 
-1. Создайте базу данных в MySQL:
+1. Восстановите базу данных в MySQL. Бэкап лежит в файлах проекта и называется `backup_employeedb.sql`. Для восстановления базы данных выполните следующие действия:
 
-   ```sql
-   CREATE DATABASE emploeedb;
+   ```bash
+   #!/bin/bash
 
-    Создайте файл App.config в корне проекта и установите строку подключения к базе данных:
-    xml
+   # Параметры базы данных
+   DB_USER="ваш_пользователь"
+   DB_PASSWORD="ваш_пароль"
+   DB_NAME="EmployeeDB"
+   BACKUP_FILE="путь_к_вашему_файлу_бэкапа.sql"  # Замените на путь к backup_employeedb.sql
 
-    <?xml version="1.0" encoding="utf-8" ?>
-    <configuration>
-        <connectionStrings>
-            <add name="emploeedb" 
-                 connectionString="Server=localhost;Database=emploeedb;User Id=ваш_пользователь;Password=ваш_пароль;" 
-                 providerName="MySql.Data.MySqlClient"/>
-        </connectionStrings>
-    </configuration>
+   # Восстановление базы данных
+   mysql -u $DB_USER -p$DB_PASSWORD $DB_NAME < $BACKUP_FILE
+
+   echo "Восстановление завершено."
+
+    Измените строку подключения к базе данных в файле EmployeeDbContext.cs:
+    csharp
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseMySql(
+            "Server=localhost;Database=EmployeeDB;User=ваш_пользователь;Password=ваш_пароль;",
+            ServerVersion.AutoDetect("Server=localhost;Database=EmployeeDB;User=ваш_пользователь;Password=ваш_пароль;"));
+    }
 
     Замените ваш_пользователь и ваш_пароль на ваши учетные данные для подключения к MySQL.
 
