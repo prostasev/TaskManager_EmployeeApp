@@ -29,9 +29,11 @@
    # Восстановление базы данных
    mysql -u $DB_USER -p$DB_PASSWORD $DB_NAME < $BACKUP_FILE
 
-   echo "Восстановление завершено."
 
-    Измените строку подключения к базе данных в файле EmployeeDbContext.cs:
+
+
+Измените строку подключения к базе данных в файле EmployeeDbContext.cs:
+   
     csharp
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -56,4 +58,3 @@
 
 </a>
 
-```
