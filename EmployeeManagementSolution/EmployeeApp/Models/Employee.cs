@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EmployeeApp.Models
 {
@@ -12,8 +9,13 @@ namespace EmployeeApp.Models
         public string FullName { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
+
+        [Required]
         public int PositionId { get; set; }
-        public decimal Rate { get; set; }
+
+        [ForeignKey("PositionId")]
         public PositionEmp? Position { get; set; }
+
+        public decimal Rate { get; set; }
     }
 }

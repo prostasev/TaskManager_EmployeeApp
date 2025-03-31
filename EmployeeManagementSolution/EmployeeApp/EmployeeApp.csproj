@@ -10,11 +10,18 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<RootNamespace>EmployeeApp</RootNamespace>
+		<ApplicationIcon>Adeptus-Mechanicus.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Include="Adeptus-Mechanicus.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="linq2db" Version="5.4.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.13" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1" />
+		<PackageReference Include="MySql.Data" Version="9.2.0" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
 	</ItemGroup>
 
