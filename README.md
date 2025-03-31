@@ -1,6 +1,6 @@
 # EmployeeApp - WPF-приложение для распределения обязанностей работников на проекте
 
-EmployeeApp — это настольное приложение, которое ...
+EmployeeApp — это настольное приложение, которое предназначено для контроля сотрудников.
 
 Приложение EmployeeApp создано с помощью WPF , мощной платформы для создания пользовательских интерфейсов с .NET. Оно использует MySQL для хранения и извлечения данных. 
 
@@ -8,42 +8,22 @@ EmployeeApp — это настольное приложение, которое
 
 1. Вам нужно иметь:
 	- .NET
-	- MySQL Workbench
+	- MySQL
  
 2. Создать базу данных в MySQL:
-	```SQL
-	> CREATE DATABASE emploeedb;
+	```
+ #!/bin/bash
 
-	> USE emploeedb;
+# Параметры базы данных
+DB_USER="ваш_пользователь"
+DB_PASSWORD="ваш_пароль"
+DB_NAME="ваша_база_данных"
+BACKUP_FILE="путь_к_вашему_файлу_бэкапа.sql"
 
-	> CREATE TABLE Positions (
-    Id INT PRIMARY KEY AUTO_INCREMENT,
-    Name TEXT NOT NULL
-	);
- 	> CREATE TABLE Users (
-    Id INT PRIMARY KEY AUTO_INCREMENT,
-    FullName TEXT NOT NULL,
-    PositionId INT NOT NULL,
-    Rate DECIMAL(10,2) NOT NULL,
-    Username TEXT NOT NULL,
-    PasswordHash TEXT NOT NULL,
-    FOREIGN KEY (PositionId) REFERENCES Positions(Id)
-	);
- 	> CREATE TABLE Tasks (
-    Id INT PRIMARY KEY AUTO_INCREMENT,
-    Name TEXT NOT NULL,
-    Description TEXT
-	);
-  	> CREATE TABLE Duties (
-    Id INT PRIMARY KEY AUTO_INCREMENT,
-    TaskId INT,
-    UserId INT,
-    Name TEXT NOT NULL,
-    StartDate DATETIME NOT NULL,
-    EndDate DATETIME NOT NULL,
-    FOREIGN KEY (TaskId) REFERENCES Tasks(Id),
-    FOREIGN KEY (UserId) REFERENCES Users(Id)
-	);
+# Восстановление базы данных
+mysql -u $DB_USER -p$DB_PASSWORD $DB_NAME < $BACKUP_FILE
+
+echo "Восстановление завершено."
 	```
 
 3. Создать a App.configв корне проекта и установить строку подключения базы данных, например.
